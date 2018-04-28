@@ -1,0 +1,1293 @@
+swagger: "2.0"
+info:
+  title: "Pixiv Public API"
+  description: "Unofficial API specification extracted from Pixiv Android App v4.8.2"
+  version: "1.0"
+host: public-api.secure.pixiv.net
+schemes:
+  - https
+basePath: /v1
+produces:
+  - application/json
+consumes:
+  - application/x-www-form-urlencoded;charset=UTF-8
+  
+definitions:
+  GenericWrapper:
+    description: "All responses from all endpoints are wrapped with this generic object."
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum: ["success", "failure"]
+
+  ResponseWrapper:
+    description: "Succsessfull response"
+    allOf:
+      - $ref: "#/definitions/GenericWrapper"
+      - properties:
+          count:
+            type: integer
+          pagination:
+            type: object
+            required:
+              - pages
+              - previous
+              - current
+              - per_page
+              - next
+              - total
+            properties:
+              pages:
+                type: integer
+              previous:
+                type: integer
+              current:
+                type: integer
+              per_page:
+                type: integer
+              next:
+                type: integer
+              total:
+                type: integer
+        required:
+          - count
+
+  Error:
+    description: "Generic error"
+    required:
+      - has_error
+    allOf:
+      - $ref: "#/definitions/GenericWrapper"
+      - properties:
+          has_error:
+            type: boolean
+          errors:
+            type: object
+            required:
+              - system
+            properties:
+              system:
+                type: object
+                required:
+                  - message
+                properties:
+                  message:
+                    description: "Error message"
+                    type: string
+
+  ImageUrls:
+    description: "Urls for the different sizes of picture"
+    properties:
+      large:
+        type: string
+      medium:
+        type: string
+      small:
+        type: string
+      max_240x240:
+        type: string
+      px_120x:
+        type: string
+      px_128x128:
+        type: string
+      px_16x16:
+        type: string
+      px_170x170:
+        type: string
+      px_480mw:
+        type: string
+      px_48x48:
+        type: string
+      px_50x50:
+        type: string
+      px_56x56:
+        type: string
+      px_64x64:
+        type: string
+      ugoira600x600:
+        type: string
+      ugoira1920x1080:
+        type: string
+        
+  Emoji:
+    properties:
+      id:
+        type: integer
+      slug:
+        type: string
+      image_urls:
+        $ref: "#/definitions/ImageUrls"
+
+  EmojisResponseWrapper:
+    required:
+      - response
+    properties:
+      response:
+        type: array
+        items:
+          $ref: "#/definitions/Emoji"
+
+  UserStats:
+    description: "User statistics"
+    required:
+      - favorites
+      - following
+      - friends
+      - works
+    properties:
+      favorites:
+          description: "Number of bookmarks"
+          type: integer
+      following:
+          description: "Number of followed users"
+          type: integer
+      friends:
+          description: "Number of friends"
+          type: integer
+      works:
+          description: "Number of submitted works"
+          type: integer
+
+  Workspace:
+    description: "Workspaces"
+    required:
+      - chair
+      - computer
+      - image_url
+      - monitor
+      - mouse
+      - music
+      - on_table
+      - other
+      - printer
+      - scanner
+      - software
+      - table
+      - tablet
+    properties:
+      chair:
+        description: "Chair"
+        type: string
+      computer:
+        description: "Computer"
+        type: string
+      image_url:
+        description: "Full sized workspace photo"
+        type: string
+      image_urls:
+          $ref: "#/definitions/ImageUrls"
+      monitor:
+        description: "Monitor"
+        type: string
+      mouse:
+        description: "Mouse"
+        type: string
+      music:
+        description: "Drawing tunes"
+        type: string
+      on_table:
+        description: "On top of your desk"
+        type: string
+      other:
+        description: "Others"
+        type: string
+      printer:
+        description: "Printer"
+        type: string
+      scanner:
+        description: "Scanner"
+        type: string
+      software:
+        description: "Software used"
+        type: string
+      table:
+        description: "Table"
+        type: string
+      tablet:
+        description: "Graphic tablet"
+        type: string
+
+  Profile:
+    description: "Profile information"
+    required:
+      - birth_date
+      - blood_type
+      - contacts
+      - homepage
+      - introduction
+      - job
+      - location
+      - tags
+    properties:
+        birth_date:
+          format: date
+          type: string
+        blood_type:
+          type: string
+        contacts:
+          type: object
+          properties:
+            twitter:
+              type: string
+        homepage:
+          type: string
+        introduction:
+          type: string
+        job:
+          type: string
+        location:
+          type: string
+        tags:
+          type: string
+        workspace:
+          $ref: "#/definitions/Workspace"
+
+  User:
+    required:
+      - account
+      - id
+      - is_follower
+      - is_following
+      - is_friend
+      - is_premium
+      - name
+      - profile
+      - profile_image_urls
+      - stats
+    properties:
+        account:
+            description: "Pixiv ID"
+            type: string
+        id:
+            type: integer
+        is_follower:
+            type: boolean
+        is_following:
+            type: boolean
+        is_friend:
+            type: boolean
+        is_premium:
+            type: boolean
+        name:
+            type: string
+        profile:
+            $ref: "#/definitions/Profile"
+        profile_image_urls:
+            $ref: "#/definitions/ImageUrls"
+        stats:
+            $ref: "#/definitions/UserStats"
+
+  UsersResponseWrapper:
+    required:
+      - response
+    properties:
+      response:
+        type: array
+        items:
+          $ref: "#/definitions/User"
+
+  WorkStats:
+    description: "Work statistics"
+    required:
+      - views_count
+      - commented_count
+      - scored_count
+      - favorited_count
+      - score
+    properties:
+      views_count:
+        type: integer
+      commented_count:
+        type: integer
+      scored_count:
+        type: integer
+      favorited_count:
+        type: object
+        properties:
+          public:
+            type: number
+          private:
+            type: number
+      score:
+        type: integer
+
+  IllustMetadata:
+    description: "Illustration metadata"
+    required:
+      - pages
+    properties:
+      pages:
+        type: array
+        items:
+          $ref: "#/definitions/ImageUrls"
+
+  UgoiraMetadata:
+    description: "Ugoria metadata"
+    required:
+      - frames
+      - zip_urls
+    properties:
+      frames:
+        type: array
+        items:
+          type: object
+          properties:
+            delay_msec:
+              type: integer
+      zip_urls:
+        $ref: "#/definitions/ImageUrls"
+
+  Work:
+    description: "Illust, manga or ugoira"
+    required:
+      - id
+      - image_urls
+    properties:
+      id:
+        type: integer
+      type:
+        type: string
+        enum: ["illustration", "manga", "ugoira"]
+      age_limit:
+        type: string
+        enum: ["all-age", "r18", "r18g"]
+      is_manga:
+        type: boolean
+      is_liked:
+        type: boolean
+      created_time:
+        type: string
+        format: date-time
+      reuploaded_time:
+        type: string
+        format: date-time
+      favorite_id:
+        description: "Favorite id or 0"
+        type: integer
+      book_style:
+        type: string
+        enum: ["none", "left_to_right", "right_to_left"]
+      width:
+        type: integer
+      height:
+        type: integer
+      page_count:
+        type: integer
+      user:
+        $ref: "#/definitions/User"
+      stats:
+        $ref: "#/definitions/WorkStats"
+      metadata:
+        allOf:
+          - $ref: "#/definitions/IllustMetadata"
+          - $ref: "#/definitions/UgoiraMetadata"
+      image_urls:
+        $ref: "#/definitions/ImageUrls"
+      tools:
+        type: array
+        items:
+          type: string
+      tags:
+        type: array
+        items:
+          type: string
+      title:
+        type: string
+      caption:
+        description: "Description"
+        type: string
+      content_type:
+        description: "Unused"
+        type: integer
+      publicity:
+        description: "Unused"
+        type: integer
+      sanity_level:
+        description: "Found on spotlighted works"
+        type: string
+        enum: ["white", "black"]
+
+  Comment:
+    required:
+      - id
+      - text
+      - user
+    properties:
+      id:
+        description: "Comment id"
+        type: integer
+      parent_id:
+        description: "Parent comment id for this one"
+        type: integer
+      root_id:
+        description: "First comment id in the thread"
+        type: integer
+      illust_id:
+        description: "Illust id this comment for"
+        type: integer
+      novel_id:
+        description: "Novel id this comment for"
+        type: integer
+      commented_time:
+        description: "Comment date and time"
+        type: string
+        format: date-time
+      stamp:
+        description: "Unused"
+        type: string
+      text:
+        description: "Text"
+        type: string
+      user:
+        $ref: "#/definitions/User"  
+
+  CommentsWrapper:
+    required:
+      - response
+    properties:
+      response:
+        type: array
+        items:
+          $ref: "#/definitions/Comment"
+
+  WorksResponseWrapper:
+    required:
+      - response
+    properties:
+      response:
+        type: array
+        items:
+          $ref: "#/definitions/Work"
+
+  SpotlightedWork:
+    required:
+      - description
+      - language
+      - work
+    properties:
+      description:
+        type: string
+      language:
+        type: string
+      work:
+        $ref: "#/definitions/Work"
+
+  Spotlight:
+    required:
+      - id
+    properties:
+      id:
+        type: integer
+      publish_date:
+        type: string
+        format: date-time
+      language:
+        type: string
+      title:
+        type: string
+      footer:
+        type: string
+      header:
+        type: string
+      image_urls:
+        $ref: "#/definitions/ImageUrls"
+      spotlighted_works:
+        type: array
+        items:
+          $ref: "#/definitions/SpotlightedWork"
+
+  SpotlightResponseWrapper:
+    required:
+      - response
+    properties:
+      response:
+        type: array
+        items:
+          $ref: "#/definitions/Spotlight"
+
+  RankedWork:
+    required:
+      - previous_rank
+      - rank
+      - work
+    properties:
+      previous_rank:
+        type: integer
+      rank:
+        type: integer
+      work:
+        $ref: "#/definitions/Work"
+
+  Ranking:
+    required:
+      - content
+      - date
+      - mode
+      - works
+    properties:
+      content:
+        type: string
+      date:
+        type: string
+        format: date
+      mode:
+        type: string
+      works:
+        type: array
+        items:
+          $ref: "#/definitions/RankedWork"
+
+  RankingResponseWrapper:
+    required:
+      - response
+    properties:
+      response:
+        type: array
+        items:
+          $ref: "#/definitions/Ranking"
+
+  Bookmark:
+    required:
+      - comment
+      - work
+      - publicity
+      - id
+    properties:
+      comment:
+        type: string
+      work:
+        type: object
+        required:
+          - id
+        properties:
+          id:
+            type: integer
+      publicity:
+        type: string
+        enum: ["public", "private"]
+      id:
+        description: "Bookmark ID"
+        type: integer
+
+  BookmarkResponseWrapper:
+    required:
+      - response
+    properties:
+      response:
+        type: array
+        items:
+          $ref: "#/definitions/Bookmark"
+
+responses:
+  GenericError:
+    description: "Generic error"
+    schema:
+      $ref: "#/definitions/Error"
+
+  GenericResponse:
+    description: "Generic response"
+    schema:
+      $ref: "#/definitions/ResponseWrapper"
+
+  EmojisResponse:
+    description: OK
+    schema:
+      allOf:
+        - $ref: "#/definitions/ResponseWrapper"
+        - $ref: "#/definitions/EmojisResponseWrapper"
+
+  UsersResponse:
+    description: OK
+    schema:
+      allOf:
+        - $ref: "#/definitions/ResponseWrapper"
+        - $ref: "#/definitions/UsersResponseWrapper"
+
+  WorksResponse:
+    description: OK
+    schema:
+      allOf:
+        - $ref: "#/definitions/ResponseWrapper"
+        - $ref: "#/definitions/WorksResponseWrapper"
+
+  CommentsResponse:
+    description: OK
+    schema:
+      allOf:
+        - $ref: "#/definitions/ResponseWrapper"
+        - $ref: "#/definitions/CommentsWrapper"
+
+  SpotlightResponse:
+    description: OK
+    schema:
+      allOf:
+        - $ref: "#/definitions/ResponseWrapper"
+        - $ref: "#/definitions/SpotlightResponseWrapper"
+
+  RankingResponse:
+    description: OK
+    schema:
+      allOf:
+        - $ref: "#/definitions/ResponseWrapper"
+        - $ref: "#/definitions/RankingResponseWrapper"
+
+  BookmarkResponse:
+    description: OK
+    schema:
+      allOf:
+        - $ref: "#/definitions/ResponseWrapper"
+        - $ref: "#/definitions/BookmarkResponseWrapper"
+
+parameters:
+  PixivID:
+    name: id
+    description: "Pixiv ID"
+    type: integer
+    in: path
+    required: true
+
+  IllustID:
+    name: id
+    description: "Illustration ID"
+    type: integer
+    in: path
+    required: true
+    
+  NovelID:
+    name: id
+    description: "Novel ID"
+    type: integer
+    in: path
+    required: true
+
+  SpotlightID:
+    name: id
+    description: "Spotlight ID"
+    type: integer
+    in: path
+    required: true
+
+  Page:
+    name: page
+    description: "Page number (starting from 1)"
+    type: integer
+    in: query
+
+  PageSize:
+    name: per_page
+    description: "Number of results per page"
+    type: integer
+    in: query
+
+  IncludeUserStats:
+    name: include_stats
+    description: "Include user statistics"
+    type: integer
+    in: query
+    enum: [0, 1]
+
+  IncludeWorkStats:
+    name: include_stats
+    description: "Include work statistics (Score, number of views, etc..)"
+    type: string
+    in: query
+    enum: ["true", "false"]
+
+  IncludeWorkSanityLevel:
+    name: include_sanity_level
+    type: string
+    in: query
+    enum: ["true", "false"]
+
+  ProfileImageSizes:
+    name: profile_image_sizes
+    description: "Select only provided userpic sizes"
+    type: array
+    in: query
+    items:
+      type: string
+      collectionFormat: csv
+      enum: ["px_170x170", "px_50x50", "px_16x16"]
+
+  ImageSizes:
+    name: image_sizes
+    description: "Select only provided picture sizes"
+    type: array
+    in: query
+    items:
+      type: string
+      collectionFormat: csv
+      enum: ["px_128x128", "px_480mw", "large", "medium", "small"]
+
+  AcceptLanguage:
+    name: Accept-Language
+    description: "Display results in certain language"
+    type: string
+    in: header
+    enum: ["ja", "en"]
+
+paths:
+  /emoji.json:
+    get:
+      description: "Returns list of available emojis"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/EmojisResponse"
+
+  /ranking/{type}.json:
+    get:
+      description: "Return rankings"
+      parameters:
+        - name: type
+          type: string
+          in: path
+          description: "Type of works (only `all` supported now)"
+          enum: ["all", "illust", "manga"]
+          required: true
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+        - name: date
+          type: string
+          in: query
+          description: "Ranking for a specific day"
+          pattern: "yyyy-MM-dd"
+        - name: mode
+          type: string
+          in: query
+          description: "Ranking type"
+          enum: ["daily", "weekly", "monthly", "daily_r18", "weekly_r18", "monthly_r18", "r18g", "original", "male", "female", "rookie", "male_r18", "female_r18"]
+          required: true
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/RankingResponse"
+
+  /users/{id}.json:
+    get:
+      description: "Returns user account data"
+      parameters:
+        - $ref: "#/parameters/PixivID"
+        - $ref: "#/parameters/IncludeUserStats"
+        - name: include_profile
+          description: "Include detailed profile (Homepage, introduction message, tags, etc..)"
+          type: integer
+          enum: [0, 1]
+          in: query
+        - name: include_contacts
+          description: "Include user contacts (Twitter, Skype, YahooID, etc..)"
+          type: integer
+          enum: [0, 1]
+          in: query
+        - name: include_workspace
+          description: "Include workspace info"
+          type: integer
+          enum: [0, 1]
+          in: query
+        - $ref: "#/parameters/ProfileImageSizes"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/UsersResponse"
+
+  /users/{id}/works.json:
+    get:
+      description: "Returns list of user works (paginated)"
+      parameters:
+        - $ref: "#/parameters/PixivID"
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+
+  /users/{id}/favorite_works.json:
+    get:
+      description: "Returns list of user favorited works (paginated)"
+      parameters:
+        - $ref: "#/parameters/PixivID"
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+
+  /works.json:
+    get:
+      description: "Returns list of newly-added works"
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+
+  /works/{id}.json:
+    get:
+      description: "Returns a single work"
+      parameters:
+        - $ref: "#/parameters/IllustID"
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/IncludeWorkStats"
+        - $ref: "#/parameters/IncludeWorkSanityLevel"
+        - name: caption_format
+          type: string
+          in: query
+          enum: ["html"]
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+    delete:
+      description: "Delete work"
+      parameters:
+        - $ref: "#/parameters/IllustID"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/GenericResponse"
+
+  /me/favorite_works.json:
+    get:
+      description: "Returns current user favorited works (paginated)"
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+        - name: publicity
+          type: string
+          in: query
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+    post:
+      description: "Add work to favorites"
+      parameters:
+        - name: work_id
+          type: integer
+          in: formData
+        - name: publicity
+          type: string
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/BookmarkResponse"
+    delete:
+      description: "Remove work from favorites"
+      parameters:
+        - name: ids
+          description: "Bookmark IDs"
+          type: array
+          items:
+            type: string
+            collectionFormat: csv
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/GenericResponse"
+
+  /me/following/works.json:
+    get:
+      description: "Return list of works submitted by users you following (paginated)"
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+
+  /me/friends/works.json:
+    get:
+      description: "Return list of works submitted by friends (paginated)"
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+
+  /me/viewed_works.json:
+    get:
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+        - $ref: "#/parameters/IncludeUserStats"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+    post:
+      parameters:
+        - name: ids
+          type: array
+          items:
+            type: string
+            collectionFormat: csv
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/GenericResponse"
+
+  /me/viewed_novels.json:
+    get:
+      parameters:
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+        - $ref: "#/parameters/IncludeUserStats"
+        - name: include_marker
+          type: integer
+          enum: [0, 1]
+          in: query
+        - name: include_series
+          type: integer
+          enum: [0, 1]
+          in: query
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+    post:
+      parameters:
+        - name: ids
+          type: array
+          items:
+            type: string
+            collectionFormat: csv
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/GenericResponse"
+
+  /me/works.json:
+    get:
+      description: "Return list of your works (paginated)"
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/IncludeWorkStats"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+
+  /spotlight.json:
+    get:
+      description: "Returns list of recent spotlighted works (paginated)"
+      parameters:
+        - $ref: "#/parameters/AcceptLanguage"
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/SpotlightResponse"
+
+  /spotlight/{id}.json:
+    get:
+      description: "Return a single spotlighted work (paginated)"
+      parameters:
+        - $ref: "#/parameters/SpotlightID"
+        - $ref: "#/parameters/AcceptLanguage"
+        - $ref: "#/parameters/ImageSizes"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/SpotlightResponse"
+
+  /trends/works.json:
+    get:
+      description: "Return list of popular works (paginated)"
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+
+  /trends/work_tags.json:
+    get:
+      description: "Return list of popular tags (paginated)"
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - name: include_works
+          description: "Include works also"
+          type: integer
+          in: query
+          enum: [0, 1]
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/WorksResponse"
+
+  /me/feeds.json:
+    get:
+      description: "News feed"
+      parameters:
+        - name: max_id
+          type: integer
+          in: query
+          description: "Start from `max_id`"
+        - name: show_r18
+          description: "Include NSFW content"
+          type: integer
+          in: query
+          enum: [0, 1]
+        - name: type
+          description: "Feed type"
+          type: string
+          in: query
+          enum: ["all", "message_from", "add_illust", "add_bookmark", "add_mypixiv", "add_favorite", "speak_simple", "self", "touch_text", "touch_nottext", "activity", "stacc", "tweet"]
+        - name: relation
+          description: "Feed relation"
+          type: string
+          in: query
+          enum: ["all", "self", "favorite", "mypixiv", "ignore"]
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+
+  /search/works.json:
+    get:
+      description: "Search works"
+      parameters:
+        - $ref: "#/parameters/ImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+        - name: q
+          description: "Search keywords"
+          type: string
+          in: query
+        - name: period
+          description: "Search period"
+          type: string
+          in: query
+          enum: ["all", "day", "week", "month"]
+        - name: order
+          description: "Search order"
+          type: string
+          in: query
+          enum: ["asc", "desc"]
+        - name: mode
+          description: "Search mode"
+          type: string
+          in: query
+          enum: ["tag", "caption"]
+        - name: sort
+          description: "Search sorting"
+          type: string
+          in: query
+          enum: ["date", "popular"]
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+
+  /signup_validation/check_code:
+    post:
+      description: ""
+      parameters:
+        - name: uuid
+          type: string
+          in: formData
+        - name: mail_address
+          type: string
+          in: formData
+        - name: code
+          type: string
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+
+  /signup/send_mail:
+    post:
+      description: ""
+      parameters:
+        - name: uuid
+          type: string
+          in: formData
+        - name: mail_address
+          type: string
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+
+  /signup:
+    post:
+      description: "Sign Up"
+      parameters:
+        - name: uuid
+          type: string
+          in: formData
+        - name: mail_address
+          type: string
+          in: formData
+        - name: code
+          type: string
+          in: formData
+        - name: pixiv_id
+          type: string
+          in: formData
+        - name: user_name
+          type: string
+          in: formData
+        - name: password
+          type: string
+          in: formData
+        - name: password_again
+          type: string
+          in: formData
+        - name: sex
+          type: integer
+          in: formData
+        - name: birthday_year
+          type: string
+          in: formData
+        - name: birthday_month
+          type: string
+          in: formData
+        - name: birthday_day
+          type: string
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+
+  /upload/works:
+    post:
+      description: "Upload work"
+      consumes:
+        - "multipart/form-data"
+      parameters:
+        - name: user_id
+          type: string
+          in: formData
+        - name: title
+          type: string
+          in: formData
+        - name: comment
+          type: string
+          in: formData
+        - name: type
+          type: string
+          in: formData
+        - name: age_limit
+          type: string
+          in: formData
+        - name: publicity
+          type: string
+          in: formData
+        - name: sexual
+          type: string
+          in: formData
+        - name: "tags[]"
+          type: array
+          items:
+            type: string
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+
+  /upload/works/status:
+    get:
+      description: "Check upload status"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+
+  /works/{id}/comments.json:
+    get:
+      description: "Get comment list for illust"
+      parameters:
+        - $ref: "#/parameters/IllustID"
+        - $ref: "#/parameters/ProfileImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/CommentsResponse"
+    post:
+      description: "Submit comment"
+      parameters:
+        - $ref: "#/parameters/IllustID"
+        - name: comment_text
+          type: string
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+
+  /novels/{id}/comments.json:
+    get:
+      description: "Get comment list for novel"
+      parameters:
+        - $ref: "#/parameters/NovelID"
+        - $ref: "#/parameters/ProfileImageSizes"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/PageSize"
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
+        200:
+          $ref: "#/responses/CommentsResponse"
+    post:
+      description: "Submit comment"
+      parameters:
+        - $ref: "#/parameters/NovelID"
+        - name: comment_text
+          type: string
+          in: formData
+      responses:
+        400:
+          $ref: "#/responses/GenericError"
